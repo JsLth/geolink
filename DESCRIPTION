@@ -1,0 +1,21 @@
+Package: geolink
+Title: Swiss Army Knife for Linking Spatial Identifers
+Version: 0.0.0.9000
+Authors@R: 
+    person("Jonas", "Lieth", , "jonas.lieth@gesis.org", role = c("aut", "cre", "cph"),
+           comment = c(ORCID = "0000-0002-3451-3176"))
+Description: What the package does (one paragraph).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    utils,
+    cli,
+    countrycode,
+    sf
+Suggests:
+    tibble,
+    ffm,
+    geonames,
+    giscoR
