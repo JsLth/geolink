@@ -4,7 +4,12 @@ Version: 0.0.0.9000
 Authors@R: 
     person("Jonas", "Lieth", , "jonas.lieth@gesis.org", role = c("aut", "cre", "cph"),
            comment = c(ORCID = "0000-0002-3451-3176"))
-Description: What the package does (one paragraph).
+Description: Provides a comprehensive set of tools for linking and
+    enriching tabular data with spatial geometries using a variety of spatial
+    identifiers, including various country codes, NUTS, LAU, FIPS, INSPIRE, and
+    others. Supports guessing unknown spatial identifiers. Allows for the
+    creation of reproducible linking workflows by registering custom and
+    portable guessing, parsing, and linking functions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -16,6 +21,7 @@ Imports:
     sf
 Suggests:
     tibble,
+    geodata,
     ffm,
     geonames,
     giscoR,
