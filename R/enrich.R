@@ -1,8 +1,70 @@
+#' Enrich data with geometries
+#' @description Given a dataframe with spatial identifiers NUTS codes or ISO-3
+#' country codes links them with their spatial representation. If you have a
+#' dataframe with an identifier and you don't know which type of identifier it
+#' is, this function can also guess it for you.
+#'
+#' @param .data A dataframe with at least one column named according to the
+#'   \code{id_col} argument.
+#' @param id_col Column in \code{.data} holding the spatial identifiers
+#'   in question.
+#' @param linker The type of spatial identifier present in
+#'   \code{.data[[id_col]]}. Can be either of:
+#'   \itemize{
+#'    \item{\code{NULL}, in which case the geolinker is guessed based on the
+#'      ID format.}
+#'    \item{The name of a geolinker registered by
+#'      \code{\link{register_geolinker}}. By default, this includes at least
+#'      \code{"gadm"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
+#'      \code{"ags"}, \code{"fips"}, and \code{"postcode"}.}
+#'    \item{A function taking the arguments \code{.data} and \code{id_col}.
+#'      The output should be an \code{sf} dataframe with linked data.
+#'      This is equivalent of registering a link function using
+#'      \code{\link{register_geolinker}} and then passing its name to this
+#'      argument.}
+#'   }
+#' @param country For linkers where a country is required (e.g., \code{"gadm"}
+#'   or \code{"nuts"}), specifies a character vector of countries. If
+#'   \code{NULL}, the countries are parsed from the ID strings. Note that
+#'   some geolinkers might not have a parse function but require country
+#'   specifications. In this case, this argument may be necessary.
+#' @param level For linkers where a geographic level is required (e.g.,
+#'   \code{"gadm"} or \code{"nuts"}), specifies a character vector of levels.
+#'   If \code{NULL}, the levels are parsed from the ID strings. Note that
+#'   some geolinkers might not have a parse function but require country
+#'   specifications. In this case, this argument may be necessary.
+#' @param iso3_scheme If \code{.data[[id_col]]} contains any country code that
+#'   can be parsed by \code{\link[countrycode]{countrycode}}, specifies the
+#'   country code scheme that the IDs follow, e.g. \code{"eurostat"} or
+#'   \code{"un"}. See \code{\link[countrycode]{codelist}} for possible code
+#'   schemes. \code{enrich} will convert them to ISO-3 and merge them using the
+#'   geometry source specified in \code{iso3_default}. If \code{NULL} (default)
+#'   and \code{iso3_auto} is \code{TRUE}, tries to guess the code scheme.
+#'   Otherwise, leaves the IDs as-is.
+#' @param iso3_auto If \code{TRUE} (default), tries to automatically convert
+#'   identifiers to ISO-3 using \code{\link[countrycode]{guess_field}}. This
+#'   is necessary if \code{id_col} holds any country codes specified in
+#'   \code{\link[countrycode]{codelist}} (e.g., GAUL, FAO, M49, FIPS, Eurostat).
+#' @param iso3_default In case \code{id_col} holds country codes that are
+#'   converted to ISO-3, specifies which geometry source to use. Defaults to
+#'   \code{"naturalearth"}, but can also take \code{"gadm"}. Future extensions
+#'   might include \code{"geoboundaries"} and \code{"gaul"}.
+#' @param crs Output coordinate reference system that merged data are
+#'   transformed to. Defaults to EPSG:3035 (ETRS89 / LAEA Europe).
+#' @param verbose If \code{TRUE}, prints informative messages about the
+#'   guessing process.
+#' @param ... Further arguments passed to the linking function.
+#'
+#' @returns An sf dataframe (or tibble if possible) with the original data
+#'   of \code{.data} and a merged geometry column.
+#'
+#' @export
 enrich <- function(.data,
                    id_col = "id",
                    linker = NULL,
                    country = NULL,
                    level = NULL,
+                   iso3_scheme = NULL,
                    iso3_auto = TRUE,
                    iso3_default = "gadm",
                    crs = 3035,
@@ -92,8 +154,7 @@ convert_to_iso3 <- function(ids) {
 
 
 guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
-  linkers <- all_geolinkers()
-  linkers <- linkers[match(linkers, priorities())]
+  linkers <- all_geolinkers(only_guessable = TRUE)
   linkers <- c(iso3_default, setdiff(linkers, iso3_default))
 
   guess <- NULL
@@ -122,8 +183,3 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
   info(c("*" = "No ID type specified, using {.val {guess}} IDs."))
   guess
 }
-
-
-supported_sources <- c(
-  "gadm", "naturalearth", "inspire", "nuts", "ags", "postcode"
-)

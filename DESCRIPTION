@@ -18,4 +18,5 @@ Suggests:
     tibble,
     ffm,
     geonames,
-    giscoR
+    giscoR,
+    fipio

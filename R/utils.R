@@ -96,3 +96,10 @@ is_installed <- function(x) {
 info <- function(..., .envir = parent.frame()) {
   cli::cli_inform(..., .envir = .envir)
 }
+
+
+overwrite_env <- function(env1, env2) {
+  rm(list = ls(envir = env1), envir = env1)
+  list2env(env2, envir = env1)
+  invisible(env1)
+}
