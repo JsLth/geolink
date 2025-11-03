@@ -19,7 +19,8 @@ assign("src", "geolink", envir = geolinkers)
 #'   \code{\link{enrich}}. The purpose of this function is to link
 #'   \code{.data} with their respective geometries. Can also take an arbitrary
 #'   number of additional arguments. These arguments should correspond to the
-#'   output of \code{parse}.
+#'   output of \code{parse}. Any argument not matched by the \code{parse}
+#'   function can be used using the dot arguments in \code{\link{enrich}}.
 #' @param check An optional function that takes exactly one argument, the
 #'   IDs to be checked. The output should be a logical vector with the same
 #'   length as the input. The purpose of this function is to check whether
@@ -141,7 +142,7 @@ get_linker <- function(name, fun = NULL) {
   geolinker <- get(name, envir = geolinkers)
 
   if (!is.null(fun)) {
-    geolinker[[fun]] %||% function(...) list()
+    geolinker[[fun]] %||% function(...) FALSE
   } else {
     geolinker
   }

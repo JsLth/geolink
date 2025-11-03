@@ -15,8 +15,8 @@
 #'      ID format.}
 #'    \item{The name of a geolinker registered by
 #'      \code{\link{register_geolinker}}. By default, this includes at least
-#'      \code{"gadm"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
-#'      \code{"ags"}, \code{"fips"}, and \code{"postcode"}.}
+#'      \code{"gadm"}, \code{"unhcr"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
+#'      \code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.}
 #'    \item{A function taking the arguments \code{.data} and \code{id_col}.
 #'      The output should be an \code{sf} dataframe with linked data.
 #'      This is equivalent of registering a link function using
@@ -47,8 +47,11 @@
 #'   \code{\link[countrycode]{codelist}} (e.g., GAUL, FAO, M49, FIPS, Eurostat).
 #' @param iso3_default In case \code{id_col} holds country codes that are
 #'   converted to ISO-3, specifies which geometry source to use. Defaults to
-#'   \code{"naturalearth"}, but can also take \code{"gadm"}. Future extensions
-#'   might include \code{"geoboundaries"} and \code{"gaul"}.
+#'   \code{"naturalearth"}, but can also take \code{"gadm"} and
+#'   \code{"unhcr"}. Future extensions might include
+#'   \code{"geoboundaries"} and \code{"gaul"}. \code{"gadm"} and \code{"unhcr"}
+#'   are generally much slower than \code{"naturalearth"} but may provide
+#'   more appropriate geometries for certain use cases.
 #' @param crs Output coordinate reference system that merged data are
 #'   transformed to. Defaults to EPSG:3035 (ETRS89 / LAEA Europe).
 #' @param verbose If \code{TRUE}, prints informative messages about the
@@ -66,7 +69,7 @@ enrich <- function(.data,
                    level = NULL,
                    iso3_scheme = NULL,
                    iso3_auto = TRUE,
-                   iso3_default = "gadm",
+                   iso3_default = "naturalearth",
                    crs = 3035,
                    verbose = TRUE,
                    ...) {
@@ -96,8 +99,10 @@ enrich <- function(.data,
     }
   }
 
-  if ((is.null(linker) || identical(linker, "gadm")) && iso3_auto) {
+  if ((is.null(linker) || linker %in% iso3_linkers) && iso3_auto) {
     ids <- convert_to_iso3(.data[[id_col]])
+  } else {
+    ids <- .data[[id_col]]
   }
 
   if (is.null(linker)) {
@@ -141,12 +146,18 @@ enrich <- function(.data,
 #' @param ids Character vector
 #' @noRd
 convert_to_iso3 <- function(ids) {
-  cc_guess <- countrycode::guess_field(ids, min_similarity = 90)
-  if (nrow(cc_guess) && !identical(cc_guess$code[1], "iso3c")) {
-    type <- cc_guess$code[1]
-    prob <- cc_guess$percent_of_unique_matched[1]
-    info("Detected {type} codes with {prob}% certainty.")
-    ids <- countrycode::countrycode(ids, origin = type, destination = "iso3c")
+  cc_guess <- countrycode::guess_field(ids, min_similarity = 100)
+
+  iso3_sim <- cc_guess["iso3c", ]$percent_of_unique_matched
+  if (!is.na(iso3_sim) && iso3_sim == 100) {
+    cc_guess <- "iso3c"
+  } else {
+    cc_guess <- cc_guess$code[1]
+  }
+
+  if (!is.na(cc_guess) && !identical(cc_guess, "iso3c")) {
+    info(c("*" = "Detected {cc_guess} codes."))
+    ids <- countrycode::countrycode(ids, origin = cc_guess, destination = "iso3c")
   }
 
   ids
@@ -163,7 +174,7 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
     check_fun <- get_linker(tried_linker, "check")
 
     if (i == 1 && iso3_auto && all(check_fun(ids))) {
-      guess <- "gadm"
+      guess <- iso3_default
       break
     }
 
@@ -176,10 +187,13 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
   if (is.null(guess)) {
     cli::cli_abort(c(
       "Could not automatically detect admin type.",
-      "i" = "Please use the `type` argument to manually specify the type of admin identifiers."
+      "i" = "Please use the `linker` argument to manually specify the type of admin identifiers."
     ))
   }
 
   info(c("*" = "No ID type specified, using {.val {guess}} IDs."))
   guess
 }
+
+
+iso3_linkers <- c("naturalearth", "gadm", "unhcr")

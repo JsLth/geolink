@@ -1,5 +1,33 @@
-postcode_link <- function(.data, id_col, ...) {
-  if (!"username" %in% ...names()) {
+#' Postcode geolinker
+#' @description
+#' Default geolinker registered through \code{\link{register_geolinker}}.
+#' These functions are not intended to be used directly but through
+#' \code{\link{enrich}}!
+#'
+#' Contains functions to link point geometries from GeoNames' postal codes
+#' database (\url{https://www.geonames.org/postal-codes/}). Provides no functions for
+#' validating and parsing as postal codes are usually pretty generic numbers.
+#'
+#' Requires the \href{https://docs.ropensci.org/geonames/}{\code{geonames}}
+#' package to be installed.
+#'
+#' @inheritParams enrich
+#' @param username Username for the GeoNames API. Necessary for any request.
+#'   For details, see the
+#'   \href{https://www.geonames.org/export/web-services.html}{documentation}
+#' @param ... Further arguments passed to the `postalCodeSearch` endpoint
+#'   of GeoNames. For details, see the
+#'   \href{https://www.geonames.org/export/web-services.html}{documentation}.
+#'
+#' @returns
+#' An sf dataframe containing \code{.data} and an added geometry column.
+#'
+#' @export
+#' @name postcode
+#'
+#' @examples \donttest{try(enrich("50667", linker = "postcode"))}
+postcode_link <- function(.data, id_col, username, ...) {
+  if (missing(username)) {
     cli::cli_abort(c(
       "If `linker = \"postcode\"`, the `username` argument must be provided.",
       "i" = paste(

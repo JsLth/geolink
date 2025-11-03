@@ -21,7 +21,8 @@ and \code{col_id}, which correspond to the same arguments in
 \code{\link{enrich}}. The purpose of this function is to link
 \code{.data} with their respective geometries. Can also take an arbitrary
 number of additional arguments. These arguments should correspond to the
-output of \code{parse}.}
+output of \code{parse}. Any argument not matched by the \code{parse}
+function can be used using the dot arguments in \code{\link{enrich}}.}
 
 \item{check}{An optional function that takes exactly one argument, the
 IDs to be checked. The output should be a logical vector with the same

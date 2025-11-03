@@ -9,7 +9,7 @@ left_merge <- function(x, y, by.x, by.y, ...) {
     if (inherits(join_col, "sfc")) {
       crs <- sf::st_crs(join_col)
       geom_col <- col
-      type <- as.character(unique(sf::st_geometry_type(join_col)))[1]
+      type <- as.character(unique(sf::st_geometry_type(y[[col]])))[1]
       new_col <- replicate(n, make_empty_geometry(type), simplify = FALSE)
       new_col <- sf::st_as_sfc(new_col)
     } else {

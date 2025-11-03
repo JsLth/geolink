@@ -12,7 +12,7 @@ enrich(
   level = NULL,
   iso3_scheme = NULL,
   iso3_auto = TRUE,
-  iso3_default = "gadm",
+  iso3_default = "naturalearth",
   crs = 3035,
   verbose = TRUE,
   ...
@@ -32,8 +32,8 @@ in question.}
 ID format.}
 \item{The name of a geolinker registered by
 \code{\link{register_geolinker}}. By default, this includes at least
-\code{"gadm"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
-\code{"ags"}, \code{"fips"}, and \code{"postcode"}.}
+\code{"gadm"}, \code{"unhcr"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
+\code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.}
 \item{A function taking the arguments \code{.data} and \code{id_col}.
 The output should be an \code{sf} dataframe with linked data.
 This is equivalent of registering a link function using
@@ -69,8 +69,11 @@ is necessary if \code{id_col} holds any country codes specified in
 
 \item{iso3_default}{In case \code{id_col} holds country codes that are
 converted to ISO-3, specifies which geometry source to use. Defaults to
-\code{"naturalearth"}, but can also take \code{"gadm"}. Future extensions
-might include \code{"geoboundaries"} and \code{"gaul"}.}
+\code{"naturalearth"}, but can also take \code{"gadm"} and
+\code{"unhcr"}. Future extensions might include
+\code{"geoboundaries"} and \code{"gaul"}. \code{"gadm"} and \code{"unhcr"}
+are generally much slower than \code{"naturalearth"} but may provide
+more appropriate geometries for certain use cases.}
 
 \item{crs}{Output coordinate reference system that merged data are
 transformed to. Defaults to EPSG:3035 (ETRS89 / LAEA Europe).}
