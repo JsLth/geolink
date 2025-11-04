@@ -105,10 +105,11 @@ enrich <- function(.data,
     ids <- .data[[id_col]]
   }
 
+  ids_changed <- length(setdiff(.data[[id_col]], ids)) > 0
   if (is.null(linker)) {
     linker <- guess_linker(
       ids,
-      iso3_auto = iso3_auto,
+      iso3_auto = ids_changed,
       iso3_default = iso3_default
     )
   }
@@ -118,16 +119,21 @@ enrich <- function(.data,
 
   if (is.null(country) && "country" %in% names(args)) {
     country <- unique(args$country)
-    info(c("*" = "Detected the following {cli::qty(level)}countr{?s/ies}: {country}"))
+    info(c("*" = "Detected the following {cli::qty(length(country))}countr{?s/ies}: {country}"))
   } else {
     args$country <- country
   }
 
   if (is.null(level) && "level" %in% names(args)) {
     level <- unique(args$level)
-    info(c("*" = "Detected the following {cli::qty(level)}level{?s}: {level}"))
+    info(c("*" = "Detected the following {cli::qty(length(level))}level{?s}: {level}"))
   } else {
     args$level <- level
+  }
+
+  if (ids_changed) {
+    ids_old <- .data[[id_col]]
+    .data[[id_col]] <- ids
   }
 
   link_fun <- get_linker(linker, "link")
@@ -135,6 +141,10 @@ enrich <- function(.data,
   args <- args[intersect(names(args), names(formals(link_fun)))]
   args <- c(args, ...)
   .data <- do.call(link_fun, args)
+
+  if (ids_changed) {
+    .data[[id_col]] <- ids_old
+  }
 
   out <- as_sf_tibble(.data)
   sf::st_transform(out, crs)
@@ -156,7 +166,7 @@ convert_to_iso3 <- function(ids) {
   }
 
   if (!is.na(cc_guess) && !identical(cc_guess, "iso3c")) {
-    info(c("*" = "Detected {cc_guess} codes."))
+    info(c("*" = "Detected {cc_guess} codes, converting to iso3c."))
     ids <- countrycode::countrycode(ids, origin = cc_guess, destination = "iso3c")
   }
 
@@ -173,7 +183,7 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
     tried_linker <- linkers[i]
     check_fun <- get_linker(tried_linker, "check")
 
-    if (i == 1 && iso3_auto && all(check_fun(ids))) {
+    if (i == 1 && iso3_auto) {
       guess <- iso3_default
       break
     }
@@ -191,7 +201,7 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
     ))
   }
 
-  info(c("*" = "No ID type specified, using {.val {guess}} IDs."))
+  info(c("*" = "No geolinker specified, using {.val {guess}}."))
   guess
 }
 

@@ -41,14 +41,14 @@ naturalearth_link <- function(.data, id_col, resolution = 110) {
   reference <- switch(
     as.character(resolution),
     "110" = rbind(
-      rnaturalearthdata::countries110["adm0_a3"],
-      rnaturalearthdata::tiny_countries110["adm0_a3"]
+      rnaturalearthdata::countries110["iso_a3"],
+      rnaturalearthdata::tiny_countries110["iso_a3"]
     ),
     "50" = rbind(
-      rnaturalearthdata::countries50["adm0_a3"],
-      rnaturalearthdata::tiny_countries50["adm0_a3"]
+      rnaturalearthdata::countries50["iso_a3"],
+      rnaturalearthdata::tiny_countries50["iso_a3"]
     ),
-    "10" = rnaturalearthhires::countries10["ADM0_A3"],
+    "10" = rnaturalearthhires::countries10["ISO_A3"],
     cli::cli_abort("Argument `resolution` can be 110, 50, or 10, not {resolution}.")
   )
 

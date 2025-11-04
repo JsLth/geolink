@@ -82,12 +82,12 @@ unhcr_parse <- function(ids) {
   )
 
   level <- ifelse(
-    nzchar(unhcr$adm2) && !is.na(unhcr$adm2),
+    nzchar(unhcr$adm2) & !is.na(unhcr$adm2),
     2,
     ifelse(
-      nzchar(unhcr$adm1) && !is.na(unhcr$adm1),
+      nzchar(unhcr$adm1) & !is.na(unhcr$adm1),
       1,
-      ifelse(nzchar(unhcr$country) && !is.na(unhcr$country), 0, NA)
+      ifelse(nzchar(unhcr$country) & !is.na(unhcr$country), 0, NA)
     )
   )
 

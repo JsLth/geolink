@@ -97,6 +97,7 @@ register_geolinker <- function(name,
 
   if (!is.null(priority) && !is.null(check)) {
     order <- get0("order", envir = geolinkers)
+    order <- setdiff(order, name)
 
     if (identical(priority, "last")) {
       priority <- length(order)

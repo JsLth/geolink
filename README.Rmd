@@ -1,0 +1,98 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# geolink
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Quickly identify areal identifiers like NUTS, ISO-3, GAUL, INSPIRE, AGS or FIPS and link them to their respective polygon geometries. Convenience wrapper around common API wrappers and standards to facilitate spatial analysis for people who don't know spatial analysis.
+
+
+## Installation
+
+You can install the development version of `{geolink}` from GitHub with:
+
+``` r
+# install.packages("pak")
+pak::pak("jslth/geolink")
+```
+
+## Example
+
+For basic use, `{geolink}` has a single function. Given a dataset with spatial identifiers, it automatically links the respective geometries:
+
+```{r example}
+library(geolink)
+library(gt)
+
+countrypops <- gt::countrypops
+countrypops <- countrypops[countrypops$year == 2020, ]
+countrypops <- enrich(countrypops, id_col = "country_code_2")
+countrypops
+```
+
+```{r cars}
+library(ggplot2)
+
+ggplot(t2) +
+    geom_sf(aes(fill = population)) +
+    scale_fill_viridis_b("Population", transform = "log10") +
+    theme_void()
+```
+
+If a country code is detected, `enrich()` will always convert it to ISO-3. However, the function can also handle other regional identifiers, e.g., FIPS codes:
+
+```{r}
+west_coast <- c("06", "41", "53")
+west_coast <- enrich(west_coast, linker = "fips", crs = 4326)
+plot(west_coast)
+```
+
+A number of "geolinkers" are pre-registered, but you can also register your own workflows:
+
+```{r}
+check <- function(ids) {
+  grepl("x: -?[0-9]{0,3}, y: -?[0-9]{0,2}", ids)
+}
+
+parse <- function(ids) {
+  strcapture(
+    "x: (-?[0-9]{0,3}), y: (-?[0-9]{0,2})",
+    ids,
+    proto = list(x = double(), y = double())
+  )
+}
+
+link <- function(.data, id_col, x, y, link_crs) {
+  geom <- Map(\(x, y) sf::st_point(c(x, y)), x, y)
+  geom <- sf::st_as_sfc(geom, crs = link_crs)
+  .data$geometry <- geom
+  sf::st_as_sf(.data)
+}
+
+register_geolinker(
+  "coords_fmt",
+  link = link,
+  check = check,
+  parse = parse
+)
+```
+
+```{r}
+test_data <- data.frame(id = c("x: 8, y: 47", "x: 9, y: 46", "x: 10, y: 45"))
+enrich(test_data, link_crs = 4326)
+```
+

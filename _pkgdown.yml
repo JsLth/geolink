@@ -1,0 +1,22 @@
+url: https://jslth.github.io/geolink/
+pkwurl: ~
+template:
+  bootstrap: 5
+  bootswatch: litera
+  math-rendering: mathjax
+  bslib:
+    base_font: {google: "Roboto"}
+    heading_font: {google: "Roboto Slab"}
+    code_font: {google: "JetBrains Mono"}
+    link-color: "#0054AD"
+
+
+navbar:
+  title: "geolink"
+  left:
+    - text: Overview
+      icon: fa-home
+      href: index.html
+    - text: "Reference"
+      icon: fa-search
+      href: reference/index.html

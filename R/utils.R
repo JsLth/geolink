@@ -1,22 +1,21 @@
 left_merge <- function(x, y, by.x, by.y, ...) {
-  idx <- match(y[[by.y]], x[[by.x]])
-  matches <- !is.na(idx)
-  idx <- idx[matches]
+  idx <- match(x[[by.x]], y[[by.y]])
   n <- nrow(x)
 
   for (col in setdiff(names(y), by.y)) {
-    join_col <- y[[col]][matches]
+    join_col <- y[[col]]
     if (inherits(join_col, "sfc")) {
       crs <- sf::st_crs(join_col)
       geom_col <- col
       type <- as.character(unique(sf::st_geometry_type(y[[col]])))[1]
       new_col <- replicate(n, make_empty_geometry(type), simplify = FALSE)
       new_col <- sf::st_as_sfc(new_col)
+      matched_rows <- which(!is.na(idx))
+      new_col[matched_rows] <- join_col[idx[matched_rows]]
     } else {
-      new_col <- rep(NA, n)
+      new_col <- join_col[idx]
     }
 
-    new_col[idx] <- join_col
     x[[col]] <- new_col
   }
 
