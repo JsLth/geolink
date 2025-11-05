@@ -12,7 +12,7 @@
 #' package to be installed.
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param level Vector of geographic levels. Can be \code{"sta"}, \code{"lan"},
 #' \code{"rbz"}, \code{"krs"}, \code{"vwg"} or \code{"gem"}. See
 #' \code{\link[ffm]{bkg_admin}} for details.
@@ -46,7 +46,7 @@ ags_link <- function(.data, id_col, level, country = "DEU", ...) {
       ags == ids_pad,
       gf == 4,
       ...
-    )["ags"]
+    )[c("ags", "geometry")]
 
     if (!nrow(reference)) {
       cli::cli_abort("No AGS input IDs match any AGS at level {level}.")

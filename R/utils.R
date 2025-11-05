@@ -1,30 +1,54 @@
+# left_merge <- function(x, y, by.x, by.y, ...) {
+#   idx <- match(x[[by.x]], y[[by.y]])
+#   n <- nrow(x)
+#
+#   for (col in setdiff(names(y), by.y)) {
+#     join_col <- y[[col]]
+#     if (inherits(join_col, "sfc")) {
+#       crs <- sf::st_crs(join_col)
+#       geom_col <- col
+#       type <- as.character(unique(sf::st_geometry_type(y[[col]])))[1]
+#       new_col <- replicate(n, make_empty_geometry(type), simplify = FALSE)
+#       new_col <- sf::st_as_sfc(new_col)
+#       matched_rows <- which(!is.na(idx))
+#       new_col[matched_rows] <- join_col[idx[matched_rows]]
+#     } else {
+#       new_col <- join_col[idx]
+#     }
+#
+#     x[[col]] <- new_col
+#   }
+#
+#   is_spatial <- any(vapply(x, inherits, "sfc", FUN.VALUE = logical(1)))
+#   if (is_spatial) {
+#     as_sf_tibble(x, crs = crs, sf_column_name = geom_col)
+#   } else {
+#     as_data_frame(x)
+#   }
+# }
+
+
 left_merge <- function(x, y, by.x, by.y, ...) {
-  idx <- match(x[[by.x]], y[[by.y]])
-  n <- nrow(x)
+  y <- y[!duplicated(y[[by.y]]), ]
+  sf_column <- attr(y, "sf_column")
+  x$.iid <- seq_len(nrow(x))
+  merged <- merge(
+    y, x,
+    by.x = by.y,
+    by.y = by.x,
+    all.x = FALSE,
+    all.y = TRUE,
+    sort = FALSE,
+    suffixes = c(".x", "")
+  )
 
-  for (col in setdiff(names(y), by.y)) {
-    join_col <- y[[col]]
-    if (inherits(join_col, "sfc")) {
-      crs <- sf::st_crs(join_col)
-      geom_col <- col
-      type <- as.character(unique(sf::st_geometry_type(y[[col]])))[1]
-      new_col <- replicate(n, make_empty_geometry(type), simplify = FALSE)
-      new_col <- sf::st_as_sfc(new_col)
-      matched_rows <- which(!is.na(idx))
-      new_col[matched_rows] <- join_col[idx[matched_rows]]
-    } else {
-      new_col <- join_col[idx]
-    }
-
-    x[[col]] <- new_col
-  }
-
-  is_spatial <- any(vapply(x, inherits, "sfc", FUN.VALUE = logical(1)))
-  if (is_spatial) {
-    as_sf_tibble(x, crs = crs, sf_column_name = geom_col)
-  } else {
-    as_data_frame(x)
-  }
+  which_by <- match(by.y, names(merged))
+  names(merged)[which_by] <- by.x
+  merged <- merged[c(names(x), sf_column)]
+  merged <- merged[order(merged$.iid), ]
+  merged$.iid <- NULL
+  row.names(merged) <- NULL
+  merged
 }
 
 
@@ -101,4 +125,9 @@ overwrite_env <- function(env1, env2) {
   rm(list = ls(envir = env1), envir = env1)
   list2env(env2, envir = env1)
   invisible(env1)
+}
+
+
+run_examples <- function() {
+  isTRUE(as.logical(Sys.getenv("GEOLINK_RUN_EXAMPLES")))
 }

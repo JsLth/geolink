@@ -5,7 +5,8 @@
 #' is, this function can also guess it for you.
 #'
 #' @param .data A dataframe with at least one column named according to the
-#'   \code{id_col} argument.
+#'   \code{id_col} argument. Alternatively, a character vector with spatial
+#'   identifiers.
 #' @param id_col Column in \code{.data} holding the spatial identifiers
 #'   in question.
 #' @param linker The type of spatial identifier present in
@@ -16,7 +17,8 @@
 #'    \item{The name of a geolinker registered by
 #'      \code{\link{register_geolinker}}. By default, this includes at least
 #'      \code{"gadm"}, \code{"unhcr"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
-#'      \code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.}
+#'      \code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.
+#'      See the "See also" section for their documentation.}
 #'    \item{A function taking the arguments \code{.data} and \code{id_col}.
 #'      The output should be an \code{sf} dataframe with linked data.
 #'      This is equivalent of registering a link function using
@@ -48,10 +50,10 @@
 #' @param iso3_default In case \code{id_col} holds country codes that are
 #'   converted to ISO-3, specifies which geometry source to use. Defaults to
 #'   \code{"naturalearth"}, but can also take \code{"gadm"} and
-#'   \code{"unhcr"}. Future extensions might include
-#'   \code{"geoboundaries"} and \code{"gaul"}. \code{"gadm"} and \code{"unhcr"}
+#'   \code{"unhcr"}. \code{"gadm"}, \code{"unhcr"}, and \code{"geoboundaries"}
 #'   are generally much slower than \code{"naturalearth"} but may provide
-#'   more appropriate geometries for certain use cases.
+#'   more appropriate geometries for certain use cases. \code{"unhcr"} may
+#'   fail with many unique country codes.
 #' @param crs Output coordinate reference system that merged data are
 #'   transformed to. Defaults to EPSG:3035 (ETRS89 / LAEA Europe).
 #' @param verbose If \code{TRUE}, prints informative messages about the
@@ -60,6 +62,19 @@
 #'
 #' @returns An sf dataframe (or tibble if possible) with the original data
 #'   of \code{.data} and a merged geometry column.
+#'
+#' @seealso
+#' Individual geolinkers:
+#'   \code{\link{naturalearth}},
+#'   \code{\link{gadm}},
+#'   \code{\link{unhcr}},
+#'   \code{\link{geoboundaries}},
+#'   \code{\link{nuts}},
+#'   \code{\link{inspire}},
+#'   \code{\link{lau}},
+#'   \code{\link{ags}},
+#'   \code{\link{fips}},
+#'   \code{\link{postcode}}
 #'
 #' @export
 enrich <- function(.data,
@@ -99,7 +114,8 @@ enrich <- function(.data,
     }
   }
 
-  if ((is.null(linker) || linker %in% iso3_linkers) && iso3_auto) {
+  try_convert <- (is.null(linker) || linker %in% iso3_linkers) && iso3_auto
+  if (try_convert) {
     ids <- convert_to_iso3(.data[[id_col]])
   } else {
     ids <- .data[[id_col]]
@@ -118,9 +134,14 @@ enrich <- function(.data,
   args <- parse_fun(ids)
 
   if (is.null(country) && "country" %in% names(args)) {
+    # case: countries parsed from IDs
     country <- unique(args$country)
     info(c("*" = "Detected the following {cli::qty(length(country))}countr{?s/ies}: {country}"))
+  } else if (is.null(country) && try_convert) {
+    # case: ISO-3 codes adopted as countries
+    args$country <- unique(ids)
   } else {
+    # case: country specified specifically or not needed at all
     args$country <- country
   }
 
@@ -157,6 +178,7 @@ enrich <- function(.data,
 #' @noRd
 convert_to_iso3 <- function(ids) {
   cc_guess <- countrycode::guess_field(ids, min_similarity = 100)
+  cc_guess <- cc_guess[cc_guess$code %in% valid_origin, ]
 
   iso3_sim <- cc_guess["iso3c", ]$percent_of_unique_matched
   if (!is.na(iso3_sim) && iso3_sim == 100) {
@@ -167,6 +189,11 @@ convert_to_iso3 <- function(ids) {
 
   if (!is.na(cc_guess) && !identical(cc_guess, "iso3c")) {
     info(c("*" = "Detected {cc_guess} codes, converting to iso3c."))
+
+    if (all(grepl("^[0-9]+$", ids))) {
+      ids <- as.numeric(ids)
+    }
+
     ids <- countrycode::countrycode(ids, origin = cc_guess, destination = "iso3c")
   }
 
@@ -206,4 +233,15 @@ guess_linker <- function(ids, iso3_auto = FALSE, iso3_default = "gadm") {
 }
 
 
-iso3_linkers <- c("naturalearth", "gadm", "unhcr")
+valid_origin <- c("cctld", "country.name", "country.name.en",
+                  "country.name.de", "country.name.fr", "country.name.it",
+                  "cowc", "cown", "dhs", "ecb", "eurostat", "fao",
+                  "fips", "gaul", "genc2c", "genc3c", "genc3n", "gwc",
+                  "gwn", "imf", "ioc", "iso2c", "iso3c", "iso3n", "p5c",
+                  "p5n", "p4c", "p4n", "un", "un_m49", "unicode.symbol",
+                  "unhcr", "unpd", "vdem", "wb", "wb_api2c", "wb_api3c",
+                  "wvs", "country.name.en.regex", "country.name.de.regex",
+                  "country.name.fr.regex", "country.name.it.regex")
+
+
+iso3_linkers <- c("naturalearth", "gadm", "unhcr", "geoboundaries")

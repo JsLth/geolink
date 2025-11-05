@@ -14,15 +14,17 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends:
+    sf
 Imports: 
     utils,
     cli,
     countrycode,
-    sf
 Suggests:
     tibble,
     geodata,
     ffm,
     geonames,
     giscoR,
-    fipio
+    fipio,
+    rnaturalearthdata

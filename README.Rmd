@@ -38,16 +38,24 @@ For basic use, `{geolink}` has a single function. Given a dataset with spatial i
 library(geolink)
 library(gt)
 
-countrypops <- gt::countrypops
-countrypops <- countrypops[countrypops$year == 2020, ]
-countrypops <- enrich(countrypops, id_col = "country_code_2")
-countrypops
+ctpop <- gt::countrypops
+ctpop <- ctpop[ctpop$year == 2020, ]
+ctpop_link <- enrich(ctpop, id_col = "country_code_2")
+ctpop_link
 ```
+
+As you can see by the output, `enrich()` automatically normalizes the country codes to ISO-3 and links them to country polygons from [Natural Earth](https://www.naturalearthdata.com/). However, many very small countries cannot be linked to any polygon. That's because Natural Earth swallows up some smaller countries at lower resolutions. One solution is to select a different geolinker. [`geoBoundaries`](https://www.geoboundaries.org/), for example, does not suffer from the same issue:
+
+```{r}
+ctpop_link <- enrich(ctpop, id_col = "country_code_2", linker = "geoboundaries")
+ctpop_link
+```
+
 
 ```{r cars}
 library(ggplot2)
 
-ggplot(t2) +
+ggplot(ctpop_link) +
     geom_sf(aes(fill = population)) +
     scale_fill_viridis_b("Population", transform = "log10") +
     theme_void()
@@ -60,6 +68,13 @@ west_coast <- c("06", "41", "53")
 west_coast <- enrich(west_coast, linker = "fips", crs = 4326)
 plot(west_coast)
 ```
+
+To view all geolinkers registered, run:
+
+```{r}
+all_geolinkers()
+```
+
 
 A number of "geolinkers" are pre-registered, but you can also register your own workflows:
 
@@ -94,5 +109,15 @@ register_geolinker(
 ```{r}
 test_data <- data.frame(id = c("x: 8, y: 47", "x: 9, y: 46", "x: 10, y: 45"))
 enrich(test_data, link_crs = 4326)
+```
+
+Registered geolinkers are portable and can be exported and imported on other machines. This could be useful for workshops or for making geolinking workflows accessible to colleagues.
+
+```{r, eval=FALSE}
+# on original machine:
+export_geolinkers(path = ".", name = "my_geolinkers")
+
+# on new machine:
+import_geolinkers("./my_geolinkers")
 ```
 

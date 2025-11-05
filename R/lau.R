@@ -12,7 +12,7 @@
 #' package to be installed.
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param country Character vector of unique ISO-3 country codes contained
 #'   by \code{ids}. Only geometries within these countries are returned.
 #' @param ... Further arguments passed \code{\link[giscoR]{gisco_get_lau}}.
@@ -36,7 +36,7 @@ lau_link <- function(.data, id_col, country, ...) {
     country = country,
     gisco_id = .data[[id_col]],
     ...
-  )["GISCO_ID"]
+  )[c("GISCO_ID", "geometry")]
 
   reference <- sf::st_sf(
     sf::st_drop_geometry(reference),

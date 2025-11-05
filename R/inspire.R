@@ -10,7 +10,7 @@
 #' \url{https://ec.europa.eu/eurostat/web/gisco/geodata/grids}).
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param x,y X and Y coordinates used to create the grid.
 #' @param res Cell size of the grid in meters.
 #' @param crs EPSG code of the CRS that \code{x} and \code{y} use.

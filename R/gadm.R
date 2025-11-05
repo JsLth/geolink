@@ -8,7 +8,7 @@
 #' of Global Administrative Areas (GADM, \url{https://gadm.org/}).
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param country Character vector of unique ISO-3 country codes contained
 #'   by \code{ids}. Only geometries within these countries are returned.
 #' @param level Vector of geographic levels. Only geometries that adhere to

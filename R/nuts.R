@@ -12,7 +12,7 @@
 #' package to be installed.
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param country Character vector of unique ISO-3 country codes contained
 #'   by \code{ids}. Only geometries within these countries are returned.
 #' @param level Vector of geographic levels. Only geometries that adhere to
@@ -40,7 +40,7 @@ nuts_link <- function(.data, id_col, country, level, ...) {
       nuts_level = lvl,
       nuts_id = .data[[id_col]],
       ...
-    )["NUTS_ID"]
+    )[c("NUTS_ID", "geometry")]
 
     merged <- left_merge(
       .data[level == lvl, , drop = FALSE],

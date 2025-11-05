@@ -11,7 +11,7 @@
 #' Requires the \href{https://docs.ropensci.org/geonames/}{\code{geonames}}
 #' package to be installed.
 #'
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param username Username for the GeoNames API. Necessary for any request.
 #'   For details, see the
 #'   \href{https://www.geonames.org/export/web-services.html}{documentation}

@@ -11,7 +11,10 @@
 #' Depending on the resolution selected, requires the \code{rnaturalearthdata}
 #' or \code{rnaturalearthhires} packages to be installed.
 #'
-#' @inheritParams enrich
+#' @param .data A dataframe with at least one column named according to the
+#'   \code{id_col} argument.
+#' @param id_col Column in \code{.data} holding the spatial identifiers
+#'   in question.
 #' @param resolution Resolution of the polygon geometries. Can be 10
 #'   (1:10m), 50 (1:50m) or 110 (1:110m). A resolution of 1:10 requires
 #'   \href{https://docs.ropensci.org/rnaturalearthhires/}{\code{rnaturalearthhires}}
@@ -33,7 +36,8 @@
 #' enrich("MCO", linker = "naturalearth", resolution = 50)}
 naturalearth_link <- function(.data, id_col, resolution = 110) {
   if (identical(resolution, "10")) {
-    check_installed("rnaturalearthhires", "to use high-resolution data from Natural Earth")
+    check_installed("ropensci/rnaturalearthhires", "to use high-resolution data from Natural Earth")
+    countries10 <- getExportedValue("rnaturalearthhires", "countries10")
   } else {
     check_installed("rnaturalearthdata", "to use data from Natural Earth")
   }
@@ -41,14 +45,14 @@ naturalearth_link <- function(.data, id_col, resolution = 110) {
   reference <- switch(
     as.character(resolution),
     "110" = rbind(
-      rnaturalearthdata::countries110["iso_a3"],
-      rnaturalearthdata::tiny_countries110["iso_a3"]
+      rnaturalearthdata::countries110[c("iso_a3", "geometry")],
+      rnaturalearthdata::tiny_countries110[c("iso_a3", "geometry")]
     ),
     "50" = rbind(
-      rnaturalearthdata::countries50["iso_a3"],
-      rnaturalearthdata::tiny_countries50["iso_a3"]
+      rnaturalearthdata::countries50[c("iso_a3", "geometry")],
+      rnaturalearthdata::tiny_countries50[c("iso_a3", "geometry")]
     ),
-    "10" = rnaturalearthhires::countries10["ISO_A3"],
+    "10" = countries10[c("ISO_A3", "geometry")],
     cli::cli_abort("Argument `resolution` can be 110, 50, or 10, not {resolution}.")
   )
 

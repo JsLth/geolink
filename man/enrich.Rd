@@ -33,7 +33,8 @@ ID format.}
 \item{The name of a geolinker registered by
 \code{\link{register_geolinker}}. By default, this includes at least
 \code{"gadm"}, \code{"unhcr"}, \code{"nuts"}, \code{"inspire"}, \code{"lau"},
-\code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.}
+\code{"ags"}, \code{"naturalearth"}, \code{"fips"}, and \code{"postcode"}.
+See the "See also" section for their documentation.}
 \item{A function taking the arguments \code{.data} and \code{id_col}.
 The output should be an \code{sf} dataframe with linked data.
 This is equivalent of registering a link function using
@@ -70,10 +71,10 @@ is necessary if \code{id_col} holds any country codes specified in
 \item{iso3_default}{In case \code{id_col} holds country codes that are
 converted to ISO-3, specifies which geometry source to use. Defaults to
 \code{"naturalearth"}, but can also take \code{"gadm"} and
-\code{"unhcr"}. Future extensions might include
-\code{"geoboundaries"} and \code{"gaul"}. \code{"gadm"} and \code{"unhcr"}
+\code{"unhcr"}. \code{"gadm"}, \code{"unhcr"}, and \code{"geoboundaries"}
 are generally much slower than \code{"naturalearth"} but may provide
-more appropriate geometries for certain use cases.}
+more appropriate geometries for certain use cases. \code{"unhcr"} may
+fail with many unique country codes.}
 
 \item{crs}{Output coordinate reference system that merged data are
 transformed to. Defaults to EPSG:3035 (ETRS89 / LAEA Europe).}
@@ -92,4 +93,17 @@ Given a dataframe with spatial identifiers NUTS codes or ISO-3
 country codes links them with their spatial representation. If you have a
 dataframe with an identifier and you don't know which type of identifier it
 is, this function can also guess it for you.
+}
+\seealso{
+Individual geolinkers:
+\code{\link{naturalearth}},
+\code{\link{gadm}},
+\code{\link{unhcr}},
+\code{\link{geoboundaries}},
+\code{\link{nuts}},
+\code{\link{inspire}},
+\code{\link{lau}},
+\code{\link{ags}},
+\code{\link{fips}},
+\code{\link{postcode}}
 }

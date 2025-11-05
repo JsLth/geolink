@@ -121,7 +121,7 @@ unregister_geolinker <- function(name) {
 #' @rdname register_geolinker
 #' @export
 all_geolinkers <- function(only_guessable = FALSE) {
-  linkers <- setdiff(ls(envir = geolinkers), "order")
+  linkers <- setdiff(ls(envir = geolinkers), c("order", "src"))
   priorities <- priorities()
 
   if (isTRUE(only_guessable)) {
@@ -143,7 +143,13 @@ get_linker <- function(name, fun = NULL) {
   geolinker <- get(name, envir = geolinkers)
 
   if (!is.null(fun)) {
-    geolinker[[fun]] %||% function(...) FALSE
+    geolinker[[fun]] %||% function(...) {
+      if (identical(fun, "check")) {
+        FALSE
+      } else {
+        list()
+      }
+    }
   } else {
     geolinker
   }

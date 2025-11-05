@@ -11,7 +11,7 @@
 #' Requires the \href{https://fipio.justinsingh.me/}{\code{fipio}}
 #' package to be installed.
 #'
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param ... Not used.
 #'
 #' @returns

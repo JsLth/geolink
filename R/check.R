@@ -43,10 +43,15 @@ check_args <- function(x, arg_names = NULL, arg_n = NULL, null = FALSE) {
 
 
 check_installed <- function(pkg, purpose) {
-  if (!is_installed(pkg)) {
+  pkg_raw <- pkg
+  if (grepl("/", pkg, fixed = TRUE)) {
+    pkg_raw <- strsplit(pkg, "/")[[1]][2]
+  }
+
+  if (!is_installed(pkg_raw)) {
     cli::cli_abort(c(
-      "Package {pkg} is needed {purpose}.",
-      "i" = "You can install it by running `install.packages(\"{pkg}\")`."
+      "Package {pkg_raw} is needed {purpose}.",
+      "i" = "You can install it by running `pak::pkg_install(\"{pkg}\")`."
     ))
   }
 }

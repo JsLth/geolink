@@ -9,7 +9,7 @@
 #' \url{https://data.unhcr.org/en/geoservices/}).
 #'
 #' @param ids A character vector of IDs.
-#' @inheritParams enrich
+#' @inheritParams naturalearth
 #' @param country Character vector of unique ISO-3 country codes contained
 #'   by \code{ids}. Only geometries within these countries are returned.
 #' @param level Vector of geographic levels. Only geometries that adhere to
@@ -102,7 +102,11 @@ unhcr_parse <- function(ids) {
 unhcr_api <- "https://gis.unhcr.org/arcgis/rest/services/core_v2"
 
 
-unhcr_query <- function(country = NULL, ids = NULL, level = 0, resolution = c("1", "15", "25")) {
+unhcr_query <- function(country = NULL,
+                        ids = NULL,
+                        level = 0,
+                        resolution = c("1", "15", "25"),
+                        ...) {
   resolution <- match.arg(resolution)
   out_fields <- c(
     "iso3",
@@ -127,7 +131,7 @@ unhcr_query <- function(country = NULL, ids = NULL, level = 0, resolution = c("1
       )
     )
   }
-
+browser()
   endpoint <- switch(
     as.character(level),
     "0" = sprintf("wrl_polbnd_int_%sm_a_unhcr", resolution),
@@ -138,15 +142,41 @@ unhcr_query <- function(country = NULL, ids = NULL, level = 0, resolution = c("1
   req <- httr2::request(unhcr_api) |>
     httr2::req_url_path_append(endpoint) |>
     httr2::req_url_path_append("FeatureServer/0/query") |>
-    httr2::req_url_query(
+    httr2::req_body_form(
       where = trimws(query),
       returnGeometry = TRUE,
       f = "geojson",
-      outFields = paste(out_fields, collapse = ",")
+      outFields = paste(out_fields, collapse = ","),
+      ...
+    ) |>
+    httr2::req_error(
+      is_error = function(resp) {
+        mime <- httr2::resp_content_type(resp)
+        is_html <- grepl("html", mime, fixed = TRUE)
+        is_html || httr2::resp_is_error(resp)
+      },
+
+      body = function(resp) {
+
+      }
     )
 
-  resp <- httr2::req_perform(req) |>
-    httr2::resp_body_string()
+  resp <- httr2::req_perform(req)
+  body <- httr2::resp_body_string(resp)
 
-  sf::read_sf(resp)
+  mime <- httr2::resp_content_type(resp)
+  is_html <- grepl("html", mime, fixed = TRUE)
+  if (is_html) {
+    cli::cli_abort(c(
+      "Cannot reach server machines. Query is likely too large.",
+      "i" = "Consider using a different geolinker or link your data in chunks."
+    ))
+  }
+
+  sf::read_sf(body)
+}
+
+
+drop_html <- function(x) {
+  trimws(regex_match(x, "<p.+>(.+)</p>", i = 2))
 }
