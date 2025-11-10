@@ -20,7 +20,8 @@ enrich(
 }
 \arguments{
 \item{.data}{A dataframe with at least one column named according to the
-\code{id_col} argument.}
+\code{id_col} argument. Alternatively, a character vector with spatial
+identifiers.}
 
 \item{id_col}{Column in \code{.data} holding the spatial identifiers
 in question.}

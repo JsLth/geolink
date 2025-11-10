@@ -27,6 +27,13 @@ by \code{ids}. Only geometries within these countries are returned.}
 these levels are returned. Can be an integer between 0 (country level)
 and 4 (municipality level).}
 
+\item{resolution}{Resolution of the polygon geometries. Can be 10
+(1:10m), 50 (1:50m) or 110 (1:110m). A resolution of 1:10 requires
+\href{https://docs.ropensci.org/rnaturalearthhires/}{\code{rnaturalearthhires}}
+package to be installed. Otherwise, requires the
+\href{https://docs.ropensci.org/rnaturalearthdata/}{\code{rnaturalearthdata}}
+package. Note that at lower resolutions, some tiny countries disappear.}
+
 \item{...}{Further arguments passed to \code{\link[geodata:gadm]{geodata::gadm}}.}
 
 \item{ids}{A character vector of IDs.}
