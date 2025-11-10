@@ -5,7 +5,7 @@
 \alias{naturalearth_link}
 \title{Natural Earth geolinker}
 \usage{
-naturalearth_link(.data, id_col, resolution = 110)
+naturalearth_link(.data, id_col, resolution = 50)
 }
 \arguments{
 \item{.data}{A dataframe with at least one column named according to the
@@ -40,7 +40,7 @@ or \code{rnaturalearthhires} packages to be installed.
 }
 \examples{
 \donttest{# Monaco cannot be matched at resolution = 110
-enrich("MCO", linker = "naturalearth")
+enrich("MCO", linker = "naturalearth", resolution = 110)
 
 # But on higher resolutions, it can
 enrich("MCO", linker = "naturalearth", resolution = 50)}

@@ -30,11 +30,11 @@
 #' @name naturalearth
 #'
 #' @examples \donttest{# Monaco cannot be matched at resolution = 110
-#' enrich("MCO", linker = "naturalearth")
+#' enrich("MCO", linker = "naturalearth", resolution = 110)
 #'
 #' # But on higher resolutions, it can
 #' enrich("MCO", linker = "naturalearth", resolution = 50)}
-naturalearth_link <- function(.data, id_col, resolution = 110) {
+naturalearth_link <- function(.data, id_col, resolution = 50) {
   if (identical(resolution, "10")) {
     check_installed("ropensci/rnaturalearthhires", "to use high-resolution data from Natural Earth")
     countries10 <- getExportedValue("rnaturalearthhires", "countries10")
